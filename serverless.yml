@@ -1,38 +1,53 @@
 service: community-backend-serverless-aws
 
-frameworkVersion: '3'
-
 provider:
   name: aws
   runtime: nodejs18.x
-  stage: dev
-  region: eu-north-1
+  region: us-east-1
   environment:
-    DYNAMODB_TABLE: ${self:service}-${sls:stage}
-
-plugins:
-  - serverless-offline
-  - serverless-dotenv-plugin
+    MYSQL_HOST: your-rds-instance-endpoint
+    MYSQL_USER: your-db-username
+    MYSQL_PASSWORD: your-db-password
+    MYSQL_DATABASE: forumdb
+    S3_BUCKET: your-s3-bucket-name
+    DYNAMODB_TABLE: forum-posts
 
 functions:
-  hello:
-    handler: src/handlers/hello.handler
+  getPosts:
+    handler: src/handlers/posts.getPosts
     events:
       - http:
-          path: hello
+          path: posts
           method: get
-          cors: true
+
+  createPost:
+    handler: src/handlers/posts.createPost
+    events:
+      - http:
+          path: posts
+          method: post
+
+  uploadFile:
+    handler: src/handlers/upload.uploadFile
+    events:
+      - http:
+          path: upload
+          method: post
 
 resources:
   Resources:
-    ItemsTable:
+    ForumPostsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TableName: forum-posts
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-warmup
