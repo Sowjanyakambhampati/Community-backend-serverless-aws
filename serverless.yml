@@ -3,7 +3,7 @@ service: community-backend-serverless-aws
 provider:
   name: aws
   runtime: nodejs18.x
-  region: us-east-1
+  region: eu-north-1
   environment:
     MYSQL_HOST: your-rds-instance-endpoint
     MYSQL_USER: your-db-username
@@ -17,22 +17,42 @@ functions:
     handler: src/handlers/posts.getPosts
     events:
       - http:
-          path: posts
+          path: /posts
           method: get
+
+  updatePost:
+    handler: src/handlers/posts.updatePost
+    events:
+      - http:
+          path: /posts/{id}
+          method: put
+
+  deletePost:
+    handler: src/handlers/posts.deletePost
+    events:
+      - http:
+          path: /posts/{id}
+          method: delete
 
   createPost:
     handler: src/handlers/posts.createPost
     events:
       - http:
-          path: posts
+          path: /posts
           method: post
 
   uploadFile:
     handler: src/handlers/upload.uploadFile
     events:
       - http:
-          path: upload
+          path: /upload
           method: post
+
+custom:
+  serverless-offline:
+    httpPort: 3003
+    lambdaPort: 3004
+    websocketPort: 3005 
 
 resources:
   Resources:
